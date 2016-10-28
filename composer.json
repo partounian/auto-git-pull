@@ -6,6 +6,9 @@
         {
             "name": "Anthony Kuske",
             "homepage": "http://www.anthonykuske.com"
+        },
+        {
+            "name": "Patrick Artounian",
         }
     ],
     "autoload": {
