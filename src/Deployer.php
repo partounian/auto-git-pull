@@ -66,11 +66,8 @@ class Deployer
      * @var array
      */
     public $allowedIpRanges = array(
-        '131.103.20.160/27', // Bitbucket
-        '165.254.145.0/26', // Bitbucket
-        '104.192.143.0/24', // Bitbucket
-        '104.192.143.192/28', // Bitbucket (Dec 2015)
-        '104.192.143.208/28', // Bitbucket (Dec 2015)
+        '104.192.143.192/28', // Bitbucket
+        '104.192.143.208/28', // Bitbucket
         '192.30.252.0/22', // GitHub
     );
 
