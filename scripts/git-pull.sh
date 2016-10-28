@@ -36,8 +36,3 @@ git submodule init  || { echo 'submodule init failed' ; exit 1; }
 
 echo "git submodule update"
 git submodule update  || { echo 'submodule update failed' ; exit 1; }
-
-if [ -f "composer.json" ]; then
-    echo "composer install"
-    composer install || { echo 'composer install failed' ; exit 1; }
-fi
