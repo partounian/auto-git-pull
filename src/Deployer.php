@@ -124,6 +124,13 @@ class Deployer
     private $logger;
 
     /**
+     * Payload
+     *
+     * @var $_POST data or JSON
+     */
+    private $payload;
+
+    /**
      * Create instance
      *
      * @param array $options Array of options to set or override
@@ -206,17 +213,19 @@ class Deployer
     }
 
     /**
-     * Write all the input from $_POST to the log file.
+     * Write all the input from stream or $_POST to the log file.
      *
      * @return bool
      */
     private function logPostedData()
     {
         if (isset($_POST['payload'])) {
-            $_POST['payload'] = json_decode($_POST['payload']);
+            $payload = $_POST['payload'];
+        } else {
+            $payload = json_decode(file_get_contents('php://input'));
         }
 
-        $this->log('POST Data', Logger::DEBUG, $_POST);
+        $this->log('Payload Data', Logger::DEBUG, $payload);
         return true;
     }
 
