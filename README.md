@@ -6,14 +6,29 @@ Automatically pull when changes are pushed to a Git repository.
 ## About
 
 There are two important parts:
-* A PHP script which Bitbucket or GitHub will automatically send a request to when you push. (`http://mysite/deploy.php` in the examples below)
+* A PHP script which Bitbucket will automatically send a request to when you push. (`http://mysite/deploy.php` in the examples below)
 * A shell script which does the actual pulling. ([`scripts/git-pull.sh`](scripts/git-pull.sh))
 
 The reason for the separation is so you don't need to grant the web user write permission to your files. You just need to allow it to run the one script as a user that does have write permission.
 
+## Notes
+
+Github support is added in a "I hope it works" basis.
+
 ## Setup
 
-* Install the latest version with `composer require tmd/auto-git-pull`
+* Install the latest version by editing your composer.json and adding these entries. 
+```json
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/partounian/auto-git-pull"
+        }
+    ],
+    "require": {
+        "tmd/auto-git-pull": "dev-master",
+    }
+```
 
 * Make the pull script executable (you need to do this if you update the package as well):
 ```bash
@@ -41,11 +56,8 @@ $deployer = new Deployer([
     // IP addresses that are allowed to trigger the pull
     // (CLI is always allowed)
     'allowedIpRanges' => [
-        '131.103.20.160/27', // Bitbucket
-        '165.254.145.0/26', // Bitbucket
-        '104.192.143.0/24', // Bitbucket
-        '104.192.143.192/28', // Bitbucket (Dec 2015)
-        '104.192.143.208/28', // Bitbucket (Dec 2015)
+        '104.192.143.192/28', // Bitbucket
+        '104.192.143.208/28', // Bitbucket
         '192.30.252.0/22', // GitHub
     ],
 
@@ -55,14 +67,15 @@ $deployer = new Deployer([
         '192.168.0.2/24'
     ],
 
-    // Git branch to reset to
+    // Reset to current branch
+    //'branch' => 'shell_exec("$(git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3)")',
     'branch' => 'master',
 
     // User to run the script as
-    'deployUser' => 'anthony',
+    'deployUser' => 'patrick',
 
     // Directory of the repository
-    'directory' => '/var/www/mysite/',
+    'directory' => __DIR__,
 
     // Path to the pull script
     // (You can provide your own script instead)
@@ -103,7 +116,7 @@ use Tmd\AutoGitPull\Deployer;
 require 'vendor/autoload.php';
 
 $deployer = new Deployer([
-    'directory' => '/var/www/mysite/'
+    'directory' => __DIR__
 ]);
 
 $logger = new Logger('deployment');
@@ -121,7 +134,7 @@ $logger->pushHandler(
 // Send an email if there's an error
 $logger->pushHandler(
     new FingersCrossedHandler(
-        new NativeMailerHandler('anthony@example.com', 'Deployment Failed', 'anthony@localhost', Logger::DEBUG),
+        new NativeMailerHandler('patrick@example.com', 'Deployment Failed', 'patrick@localhost', Logger::DEBUG),
         new ErrorLevelActivationStrategy(Logger::ERROR)
     )
 );
@@ -151,13 +164,13 @@ sudo visudo
 # anthony = User the shell script needs to run as to write to the directory
 # /var/www/mysite/vendor/tmd/auto-git-pull/scripts/git-pull.sh = Path to shell script
 
-www-data ALL=(anthony) NOPASSWD: /var/www/mysite/vendor/tmd/auto-git-pull/scripts/git-pull.sh
+www-data ALL=(patrick) NOPASSWD: /var/www/mysite/vendor/tmd/auto-git-pull/scripts/git-pull.sh
 ```
 
 * Set the user to run the pull as in the parameters:
 ```php
 $deployer = new \Tmd\AutoGitPull\Deployer(array(
-    'deployUser' => 'anthony',
+    'deployUser' => 'patrick',
     // ...
 ));
 ```
