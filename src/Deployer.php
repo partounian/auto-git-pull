@@ -302,12 +302,12 @@ class Deployer {
                     $this->log("Deploy script exited with code $return", Logger::ERROR);
                     throw new Exception("Deploy script exited with code $return");
                 }
-        }
-        $this->log('Deployment successful.', Logger::NOTICE);
+                $this->log('Deployment successful.', Logger::NOTICE);
 
-        if (!empty($this->postDeployCallback)) {
-            $callback = $this->postDeployCallback;
-            $callback();
+                if (!empty($this->postDeployCallback)) {
+                    $callback = $this->postDeployCallback;
+                    $callback();
+                }
         }
     }
 }
