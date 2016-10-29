@@ -277,8 +277,7 @@ class Deployer {
         }
 
         if ($payload->repository->html->href == 'https://bitbucket.org/' . 'printfirm/printfirm.com'
-            && $payload->destination->branch->name == $this->branch) {
-
+            && $payload->destination->branch->name == $this->branch) {  
                 // Run the deploy script
                 $script = escapeshellarg($this->pullScriptPath)
                     . " -b {$this->branch}"
@@ -298,16 +297,17 @@ class Deployer {
 
                 $this->log("Output from script", Logger::DEBUG, $output);
 
-                if ($return !== 0) {
-                    $this->log("Deploy script exited with code $return", Logger::ERROR);
-                    throw new Exception("Deploy script exited with code $return");
-                }
                 $this->log('Deployment successful.', Logger::NOTICE);
 
                 if (!empty($this->postDeployCallback)) {
                     $callback = $this->postDeployCallback;
                     $callback();
                 }
+        }
+        
+        if ($return !== 0) {
+            $this->log("Deploy script exited with code $return", Logger::ERROR);
+            throw new Exception("Deploy script exited with code $return");
         }
     }
 }
