@@ -7,9 +7,6 @@
  * Built for use with BitBucket but it should be easily adaptable to work
  * with GitHub.
  *
- * TODO: Check which branch was pushed to (currently it pulls no
- * matter what branch was pushed to)
- *
  * Based on deployment script by Iain Gray igray@itgassociates.com
  * https://bitbucket.org/itjgray/bitbucket-php-deploy.git
  *
@@ -25,19 +22,9 @@ use Exception;
 use Monolog\Logger;
 
 class Deployer {
-    // User options...
-
     /**
      * Which IPs can trigger the deployment?
      * (PHP CLI is always allowed)
-     *
-     * Bitbucket IPs were found here on Oct 26th 2015:
-     * https://confluence.atlassian.com/bitbucket/manage-webhooks-735643732.html
-     * and here on Dec 11th 2015:
-     * https://blog.bitbucket.org/2015/12/03/making-bitbuckets-network-better-faster-and-ready-to-grow/
-     *
-     * GitHub IPs where found here on Oct 26th 2015:
-     * https://help.github.com/articles/what-ip-addresses-does-github-use-that-i-should-whitelist/
      *
      * @var array
      */
@@ -52,7 +39,7 @@ class Deployer {
      *
      * @var string
      */
-    public $branch = 'master';
+    public $branch;
 
     /**
      * The username to run the deployment under
@@ -110,8 +97,7 @@ class Deployer {
      *
      * @throws Exception
      */
-    public function __construct($options = array())
-    {
+    public function __construct($options = array()) {
         $possibleOptions = array(
             'allowedIpRanges',
             'branch',
@@ -130,12 +116,14 @@ class Deployer {
             throw new Exception("A directory must be supplied");
         }
 
+        if (empty($this->branch)) {
+            throw new Exception("A branch must be supplied");
+        }
 
         if (isset($options['additionalAllowedIpRanges'])) {
             $this->allowedIpRanges = array_merge($this->allowedIpRanges, $options['additionalAllowedIpRanges']);
         }
 
-        // Use the provided script by default
         if (empty($this->pullScriptPath)) {
             $this->pullScriptPath = dirname(__DIR__) . '/scripts/git-pull.sh';
         }
@@ -146,8 +134,7 @@ class Deployer {
      *
      * @param Logger $logger
      */
-    public function setLogger(Logger $logger)
-    {
+    public function setLogger(Logger $logger) {
         $this->logger = $logger;
     }
 
@@ -158,8 +145,7 @@ class Deployer {
      * @param int $level One of the levels defined by Monolog (e.g. INFO, DEBUG, ERROR, etc.)
      * @param array $context
      */
-    private function log($message, $level = Logger::DEBUG, $context = array())
-    {
+    private function log($message, $level = Logger::DEBUG, $context = array()) {
         if ($this->logger instanceof Logger) {
             $this->logger->log($level, $message, $context);
         }
@@ -170,8 +156,7 @@ class Deployer {
      *
      * @return bool
      */
-    private function logHeaders()
-    {
+    private function logHeaders() {
         if (empty($_SERVER)) {
             return false;
         }
@@ -190,13 +175,12 @@ class Deployer {
      *
      * @return bool
      */
-    private function logPostedData()
-    {
-        if (isset($_POST['payload'])) {
-            $payload = $_POST['payload'];
-        } else {
-            $payload = json_decode(file_get_contents('php://input'));
-        }
+    private function logPostedData() {
+        $postData = $_POST['payload'];
+
+        $payload = json_decode(postData);
+
+        //$payload = json_decode(file_get_contents('php://input'));
 
         $this->log('Payload Data', Logger::DEBUG, $payload);
         return true;
@@ -208,8 +192,7 @@ class Deployer {
      *
      * @return string|null
      */
-    protected function getIp()
-    {
+    protected function getIp() {
         $ipAddress = null;
 
         if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
@@ -240,8 +223,7 @@ class Deployer {
      *
      * @return bool
      */
-    private function isIpInRange($ip, $range)
-    {
+    private function isIpInRange($ip, $range) {
         if (strpos($range, '/') == false) {
             $range .= '/32';
         }
@@ -261,8 +243,7 @@ class Deployer {
      *
      * @return bool
      */
-    private function isIpPermitted($ip)
-    {
+    private function isIpPermitted($ip) {
         foreach ($this->allowedIpRanges as $range) {
             if ($this->isIpInRange($ip, $range)) {
                 return true;
@@ -276,8 +257,7 @@ class Deployer {
      *
      * @throws Exception
      */
-    public function deploy()
-    {
+    public function deploy() {
         $this->log('Attempting deployment...');
 
         if (php_sapi_name() === 'cli') {
@@ -296,32 +276,36 @@ class Deployer {
             }
         }
 
-        // Run the deploy script
-        /* $script = escapeshellarg($this->pullScriptPath)
-            . " -b {$this->branch}"
-            . " -d " . escapeshellarg($this->directory)
-            . " -r {$this->remote}";
+        if ($payload->repository->html->href == 'https://bitbucket.org/' . 'printfirm/printfirm.com'
+            && $payload->destination->branch->name == $this->branch) {
 
-        $cmd = "{$script} 2>&1";
- */
-        $cmd = "git fetch && git pull";
+                // Run the deploy script
+            /* $script = escapeshellarg($this->pullScriptPath)
+                . " -b {$this->branch}"
+                . " -d " . escapeshellarg($this->directory)
+                . " -r {$this->remote}";
 
-        /* if (!empty($this->deployUser)) {
-            $cmd = "sudo -u {$this->deployUser} {$cmd}";
-        } */
+            $cmd = "{$script} 2>&1";
+             */
+                $cmd = "git fetch && git pull";
 
-        // $this->log($cmd, Logger::DEBUG);
+            /* if (!empty($this->deployUser)) {
+                $cmd = "sudo -u {$this->deployUser} {$cmd}";
+            } */
 
-        $output = [];
-        exec($cmd, $output, $return);
+                // $this->log($cmd, Logger::DEBUG);
 
-        $this->log("Output from script", Logger::DEBUG, $output);
+                $output = [];
+                exec($cmd, $output, $return);
 
-        if ($return !== 0) {
-            $this->log("Deploy script exited with code $return", Logger::ERROR);
-            throw new Exception("Deploy script exited with code $return");
-        }
+                $this->log("Output from script", Logger::DEBUG, $output);
 
+                if ($return !== 0) {
+                    $this->log("Deploy script exited with code $return", Logger::ERROR);
+                    throw new Exception("Deploy script exited with code $return");
+                }
+
+            }
         $this->log('Deployment successful.', Logger::NOTICE);
 
         if (!empty($this->postDeployCallback)) {
