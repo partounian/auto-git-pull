@@ -1,6 +1,6 @@
 #!/bin/sh
 
-branch=master
+branch=.
 directory=.
 remote=origin
 
@@ -31,8 +31,8 @@ git fetch $remote 2>&1  || { echo 'fetch failed' ; exit 1; }
 echo "git reset --hard $remote/$branch 2>&1"
 git reset --hard $remote/$branch || { echo 'reset failed' ; exit 1; }
 
-echo "git submodule init"
-git submodule init  || { echo 'submodule init failed' ; exit 1; }
-
-echo "git submodule update"
-git submodule update  || { echo 'submodule update failed' ; exit 1; }
+# echo "git submodule init"
+# git submodule init  || { echo 'submodule init failed' ; exit 1; }
+# 
+# echo "git submodule update"
+# git submodule update  || { echo 'submodule update failed' ; exit 1; }
