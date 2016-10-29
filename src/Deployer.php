@@ -175,13 +175,11 @@ class Deployer {
      * @return bool
      */
     private function logPostedData() {
-        $postBody = $_POST['payload'];
+        $postBody = file_get_contents('php://input');
+        $this->payload = json_decode($postBody);
 
-        $this->payload = json_decode(postBody);
-
-        //$payload = json_decode(file_get_contents('php://input'));
-
-        $this->log('Payload Data', Logger::DEBUG, $payload);
+        // Can't log object
+        // $this->log('Payload Data', Logger::DEBUG, $this->payload);
         return true;
     }
 
@@ -265,7 +263,12 @@ class Deployer {
             $ipAddress = $this->getIp();
             $this->log("IP is {$ipAddress}");
             $this->logHeaders();
-            $this->logPostedData();
+            
+            if(!$this->logPostedData()) {
+                $this->log('Did not receive JSON', Logger::DEBUG);
+
+                throw new Exception('Did not receive JSON');
+            }
 
             if (!$this->isIpPermitted($ipAddress)) {
                 $this->log($ipAddress . ' is not an authorised Remote IP Address', Logger::WARNING);
