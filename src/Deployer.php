@@ -175,8 +175,7 @@ class Deployer {
      * @return bool
      */
     private function logPostedData() {
-        $postBody = file_get_contents('php://input');
-        $this->payload = json_decode($postBody);
+        $this->payload = json_decode(file_get_contents('php://input'));
 
         // Can't log object
         // $this->log('Payload Data', Logger::DEBUG, $this->payload);
