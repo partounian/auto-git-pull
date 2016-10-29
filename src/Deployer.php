@@ -280,20 +280,18 @@ class Deployer {
             && $payload->destination->branch->name == $this->branch) {
 
                 // Run the deploy script
-            /* $script = escapeshellarg($this->pullScriptPath)
-                . " -b {$this->branch}"
-                . " -d " . escapeshellarg($this->directory)
-                . " -r {$this->remote}";
+                $script = escapeshellarg($this->pullScriptPath)
+                    . " -b {$this->branch}"
+                    . " -d " . escapeshellarg($this->directory)
+                    . " -r {$this->remote}";
 
-            $cmd = "{$script} 2>&1";
-             */
-                $cmd = "git fetch && git pull";
+                $cmd = "{$script} 2>&1";
 
-            /* if (!empty($this->deployUser)) {
-                $cmd = "sudo -u {$this->deployUser} {$cmd}";
-            } */
+                /* if (!empty($this->deployUser)) {
+                    $cmd = "sudo -u {$this->deployUser} {$cmd}";
+                } */
 
-                // $this->log($cmd, Logger::DEBUG);
+                $this->log($cmd, Logger::DEBUG);
 
                 $output = [];
                 exec($cmd, $output, $return);
@@ -304,8 +302,7 @@ class Deployer {
                     $this->log("Deploy script exited with code $return", Logger::ERROR);
                     throw new Exception("Deploy script exited with code $return");
                 }
-
-            }
+        }
         $this->log('Deployment successful.', Logger::NOTICE);
 
         if (!empty($this->postDeployCallback)) {
