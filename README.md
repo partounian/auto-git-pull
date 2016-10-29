@@ -13,7 +13,7 @@ The reason for the separation is so you don't need to grant the web user write p
 
 ## Notes
 
-Github support is added in a "I hope it works" basis.
+Not ready out-of-the-box for GitHub, but it can easily be modified for it.
 
 ## Setup
 
