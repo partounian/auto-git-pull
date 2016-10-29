@@ -31,7 +31,6 @@ class Deployer {
     public $allowedIpRanges = array(
         '104.192.143.192/28', // Bitbucket
         '104.192.143.208/28', // Bitbucket
-        '192.30.252.0/22', // GitHub
     );
 
     /**
@@ -176,9 +175,9 @@ class Deployer {
      * @return bool
      */
     private function logPostedData() {
-        $postData = $_POST['payload'];
+        $postBody = $_POST['payload'];
 
-        $payload = json_decode(postData);
+        $this->payload = json_decode(postBody);
 
         //$payload = json_decode(file_get_contents('php://input'));
 
@@ -276,8 +275,8 @@ class Deployer {
             }
         }
 
-        if ($payload->repository->html->href == 'https://bitbucket.org/' . 'printfirm/printfirm.com'
-            && $payload->destination->branch->name == $this->branch) {  
+        if ($this->payload->repository->html->href == 'https://bitbucket.org/' . 'printfirm/printfirm.com'
+            && $this->payload->destination->branch->name == $this->branch) {  
                 // Run the deploy script
                 /* $script = escapeshellarg($this->pullScriptPath)
                     . " -b {$this->branch}"
