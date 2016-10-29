@@ -24,8 +24,7 @@ use Closure;
 use Exception;
 use Monolog\Logger;
 
-class Deployer
-{
+class Deployer {
     // User options...
 
     /**
@@ -205,7 +204,7 @@ class Deployer
 
     /**
      * Return the IP the request is from.
-     * (Might be from a proxy or via CloudFlare
+     * (Might be from a proxy or via CloudFlare)
      *
      * @return string|null
      */
@@ -231,65 +230,6 @@ class Deployer
         // Use the first IP
         return $ipAddress[0];
     }
-
-    /**
-     * Executes the necessary commands to do the pull.
-     *
-     * @throws Exception
-     */
-    public function deploy()
-    {
-        $this->log('Attempting deployment...');
-
-        if (php_sapi_name() === 'cli') {
-            $this->log("Running from PHP CLI");
-        } else {
-            $ipAddress = $this->getIp();
-            $this->log("IP is {$ipAddress}");
-            $this->logHeaders();
-            $this->logPostedData();
-
-            if (!$this->isIpPermitted($ipAddress)) {
-                $this->log($ipAddress . ' is not an authorised Remote IP Address', Logger::WARNING);
-
-                header('HTTP/1.1 403 Forbidden');
-                throw new Exception($ipAddress . ' is not an authorised Remote IP Address');
-            }
-        }
-
-        // Run the deploy script
-
-        $script = escapeshellarg($this->pullScriptPath)
-            . " -b {$this->branch}"
-            . " -d " . escapeshellarg($this->directory)
-            . " -r {$this->remote}";
-
-        $cmd = "{$script} 2>&1";
-
-        if (!empty($this->deployUser)) {
-            $cmd = "sudo -u {$this->deployUser} {$cmd}";
-        }
-
-        $this->log($cmd, Logger::DEBUG);
-
-        $output = [];
-        exec($cmd, $output, $return);
-
-        $this->log("Output from script", Logger::DEBUG, $output);
-
-        if ($return !== 0) {
-            $this->log("Deploy script exited with code $return", Logger::ERROR);
-            throw new Exception("Deploy script exited with code $return");
-        }
-
-        $this->log('Deployment successful.', Logger::NOTICE);
-
-        if (!empty($this->postDeployCallback)) {
-            $callback = $this->postDeployCallback;
-            $callback();
-        }
-    }
-
 
     /**
      * Check if an IP address is within the given range.
@@ -329,5 +269,64 @@ class Deployer
             }
         }
         return false;
+    }
+
+    /**
+     * Executes the necessary commands to do the pull.
+     *
+     * @throws Exception
+     */
+    public function deploy()
+    {
+        $this->log('Attempting deployment...');
+
+        if (php_sapi_name() === 'cli') {
+            $this->log("Running from PHP CLI");
+        } else {
+            $ipAddress = $this->getIp();
+            $this->log("IP is {$ipAddress}");
+            $this->logHeaders();
+            $this->logPostedData();
+
+            if (!$this->isIpPermitted($ipAddress)) {
+                $this->log($ipAddress . ' is not an authorised Remote IP Address', Logger::WARNING);
+
+                header('HTTP/1.1 403 Forbidden');
+                throw new Exception($ipAddress . ' is not an authorised Remote IP Address');
+            }
+        }
+
+        // Run the deploy script
+        /* $script = escapeshellarg($this->pullScriptPath)
+            . " -b {$this->branch}"
+            . " -d " . escapeshellarg($this->directory)
+            . " -r {$this->remote}";
+
+        $cmd = "{$script} 2>&1";
+ */
+        $cmd = "git fetch && git pull";
+
+        /* if (!empty($this->deployUser)) {
+            $cmd = "sudo -u {$this->deployUser} {$cmd}";
+        } */
+
+        // $this->log($cmd, Logger::DEBUG);
+
+        $output = [];
+        exec($cmd, $output, $return);
+
+        $this->log("Output from script", Logger::DEBUG, $output);
+
+        if ($return !== 0) {
+            $this->log("Deploy script exited with code $return", Logger::ERROR);
+            throw new Exception("Deploy script exited with code $return");
+        }
+
+        $this->log('Deployment successful.', Logger::NOTICE);
+
+        if (!empty($this->postDeployCallback)) {
+            $callback = $this->postDeployCallback;
+            $callback();
+        }
     }
 }
