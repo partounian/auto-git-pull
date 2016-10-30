@@ -280,14 +280,12 @@ class Deployer {
         // if ($this->payload->repository->html->href == 'https://bitbucket.org/' . 'printfirm/printfirm.com'
             // && $this->payload->destination->branch->name == $this->branch) {  
                 // Run the deploy script
-                /* $script = escapeshellarg($this->pullScriptPath)
+                $script = escapeshellarg($this->pullScriptPath)
                     . " -b {$this->branch}"
                     . " -d " . escapeshellarg($this->directory)
                     . " -r {$this->remote}";
 
                 $cmd = "{$script} 2>&1";
- */
-                $cmd = "git fetch && git pull";
 
                 $this->log($cmd, Logger::DEBUG);
 
