@@ -52,6 +52,8 @@ use Tmd\AutoGitPull\Deployer;
 
 require 'vendor/autoload.php';
 
+$BRANCH = shell_exec('echo $(git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3)');
+
 $deployer = new Deployer([
     // IP addresses that are allowed to trigger the pull
     // (CLI is always allowed)
@@ -61,15 +63,8 @@ $deployer = new Deployer([
         '192.30.252.0/22', // GitHub
     ],
 
-    // These are added to the allowedIpRanges array
-    // to avoid having to define the Bitbucket/GitHub IPs in your own code
-    'additionalAllowedIpRanges' => [
-        '192.168.0.2/24'
-    ],
-
     // Reset to current branch
-    //'branch' => 'shell_exec("$(git symbolic-ref HEAD 2>/dev/null | cut -d"/" -f 3)")',
-    'branch' => 'master',
+    'branch' => $BRANCH,
 
     // User to run the script as
     'deployUser' => 'patrick',
@@ -121,7 +116,7 @@ $deployer = new Deployer([
 
 $logger = new Logger('deployment');
 
-// Output log messages to screen
+// Output log messages to screen (on URL)
 $logger->pushHandler(
     new StreamHandler("php://output")
 );
