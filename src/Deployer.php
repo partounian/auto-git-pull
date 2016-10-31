@@ -257,19 +257,18 @@ class Deployer {
         } else {
             $ipAddress = $this->getIp();
             $this->log("IP is {$ipAddress}");
+            
+            if (!$this->isIpPermitted($ipAddress)) {
+                header('HTTP/1.1 403 Forbidden');
+
+                $this->log($ipAddress . ' is not an authorised Remote IP Address', Logger::WARNING);
+                throw new Exception($ipAddress . ' is not an authorised Remote IP Address');
+            }
             $this->logHeaders();
             
             if(!$this->logPostedData()) {
                 $this->log('Did not receive JSON', Logger::DEBUG);
-
                 throw new Exception('Did not receive JSON');
-            }
-
-            if (!$this->isIpPermitted($ipAddress)) {
-                $this->log($ipAddress . ' is not an authorised Remote IP Address', Logger::WARNING);
-
-                header('HTTP/1.1 403 Forbidden');
-                throw new Exception($ipAddress . ' is not an authorised Remote IP Address');
             }
         }
 
