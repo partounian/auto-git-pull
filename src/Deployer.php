@@ -124,7 +124,7 @@ class Deployer {
         }
 
         if (empty($this->pullScriptPath)) {
-            $this->pullScriptPath = dirname(__DIR__) . '/scripts/git-pull.sh';
+            $this->pullScriptPath = __DIR__ . '/scripts/git-pull.sh';
         }
     }
 
