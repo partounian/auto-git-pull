@@ -282,6 +282,10 @@ class Deployer {
 
                 $cmd = "{$script} 2>&1";
 
+                if (!empty($this->deployUser)) {
+                    $cmd = "sudo -u {$this->deployUser} {$cmd}";
+                } 
+
                 $this->log($cmd, Logger::DEBUG);
 
                 $output = [];
