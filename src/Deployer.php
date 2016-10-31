@@ -85,7 +85,7 @@ class Deployer {
     /**
      * Payload
      *
-     * @var $_POST data or JSON
+     * @var JSON object
      */
     private $payload;
 
@@ -117,10 +117,6 @@ class Deployer {
 
         if (empty($this->branch)) {
             throw new Exception("A branch must be supplied");
-        }
-
-        if (isset($options['additionalAllowedIpRanges'])) {
-            $this->allowedIpRanges = array_merge($this->allowedIpRanges, $options['additionalAllowedIpRanges']);
         }
 
         if (empty($this->pullScriptPath)) {
@@ -170,7 +166,7 @@ class Deployer {
     }
 
     /**
-     * Write all the input from stream or $_POST to the log file.
+     * Write all the input from stream/$_POST to the log file.
      *
      * @return bool
      */
