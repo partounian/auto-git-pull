@@ -277,7 +277,7 @@ class Deployer {
             // && $this->payload->destination->branch->name == $this->branch) {  
                 // Run the deploy script
                 $script = escapeshellarg($this->pullScriptPath)
-                    . " -b {$this->branch}"
+                    . " -b " . escapeshellarg($this->branch)
                     . " -d " . escapeshellarg($this->directory)
                     . " -r {$this->remote}";
 
